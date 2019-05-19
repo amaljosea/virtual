@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<style>
+body
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.box 
+{
+    padding: 10px
+}
+#container 
+{
+    height: 300px;
+    overflow: scroll;
+}
+#result
+{
+    display: flex; 
+    flex-direction: "column"; 
+    justify-content: center;
+    align-items: center;
+}
+.inside-box
+{
+    background-color: aqua;
+    height: 100px;
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+</style>
+<body>
+    <div id="container"></div>
+    <div id="result">
+        <h4>Visible Box are:</h4>
+    </div>
+</body>
+<script>
+    const total = 100
+    const boxHeight = 120
+    const options = {
+            root: document.getElementById('container'),
+            rootMargin: '0px',
+            threshold: [1,0]
+    }
+    const callback = (entries) => {
+        entries.forEach(function(entry) {
+            console.log(entry)
+        });
+    }
+    var observer = new IntersectionObserver(callback, options);
+    let addObserver = (start, end) => {
+        let startNode=document.querySelector('[id="'+start+'"]');
+        let endNode =document.querySelector('[id="'+end+'"]');
+        observer.observe(startNode)
+        observer.observe(endNode)
+
+    };
+
+    let renderBox = (start, end, total) => {
+        let dataToRender = ""
+        let visibleList = ""
+        dataToRender+="<div style='height:"+ start*boxHeight +"px'></div>"
+        for(i=start;i<=end;i++) {
+            visibleList += '<p class="visible-boxes">'+i.toString()+'</p>'
+            dataToRender += '<div class="box" id='+i+'><div class="inside-box"><p class="number-text">'+i+'</p></div></div>'
+        }
+        dataToRender+="<div style='height:"+ (total-end)*boxHeight +"px'></div>"
+        document.getElementById("container").innerHTML +=dataToRender
+        document.getElementById("result").innerHTML += visibleList
+        addObserver(start, end)
+    };
+
+    let initialiseValues= (total) => {
+        let containerHeight = document.getElementById('container').clientHeight
+        let initialNodesToORender = Math.ceil(containerHeight/boxHeight)
+        renderBox(0, initialNodesToORender, total)
+    }
+    initialiseValues(total)
+</script>
+</html>
