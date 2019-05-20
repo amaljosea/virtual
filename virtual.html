@@ -43,28 +43,47 @@ body
     </div>
 </body>
 <script>
-    const total = 100
+    const totalNumberOfBox = 100
     const boxHeight = 120
+    let containerHeight = document.getElementById('container').clientHeight
     const options = {
             root: document.getElementById('container'),
             rootMargin: '0px',
-            threshold: [1,0]
+            threshold: [0]
     }
+    let start=0, end=0
+    let previousY=containerHeight/2
+    let initial=true
     const callback = (entries) => {
         entries.forEach(function(entry) {
-            console.log(entry)
+            if(!initial){
+                if(previousY>entry.boundingClientRect.y){
+                console.log("scrolling up")
+                // if(start!=1){
+                //     start-=1
+                //     renderBox()
+                // }
+                } else {
+                console.log("scrolling down")
+                // if(start!=totalNumberOfBox-2){
+                //     start+=1
+                //     renderBox()
+                // }
+                }
+            }
+            initial=false
+            previousY=entry.boundingClientRect.y
         });
     }
     var observer = new IntersectionObserver(callback, options);
-    let addObserver = (start, end) => {
-        let startNode=document.querySelector('[id="'+start+'"]');
-        let endNode =document.querySelector('[id="'+end+'"]');
-        observer.observe(startNode)
-        observer.observe(endNode)
-
+    let addObserver = (id) => {
+        initial=true
+        console.log(id)
+        let observedNode=document.querySelector('[id="'+id+'"]');
+        observer.observe(observedNode)
     };
 
-    let renderBox = (start, end, total) => {
+    let renderBox = () => {
         let dataToRender = ""
         let visibleList = ""
         dataToRender+="<div style='height:"+ start*boxHeight +"px'></div>"
@@ -72,17 +91,17 @@ body
             visibleList += '<p class="visible-boxes">'+i.toString()+'</p>'
             dataToRender += '<div class="box" id='+i+'><div class="inside-box"><p class="number-text">'+i+'</p></div></div>'
         }
-        dataToRender+="<div style='height:"+ (total-end)*boxHeight +"px'></div>"
+        dataToRender+="<div style='height:"+ (totalNumberOfBox-end)*boxHeight +"px'></div>"
         document.getElementById("container").innerHTML +=dataToRender
         document.getElementById("result").innerHTML += visibleList
-        addObserver(start, end)
+        addObserver(Math.round((end+start)/2))
     };
 
-    let initialiseValues= (total) => {
-        let containerHeight = document.getElementById('container').clientHeight
-        let initialNodesToORender = Math.ceil(containerHeight/boxHeight)
-        renderBox(0, initialNodesToORender, total)
+    let initialiseValues= (totalNumberOfBox) => {
+        start=0
+        end = Math.ceil(containerHeight/boxHeight)
+        renderBox()
     }
-    initialiseValues(total)
+    initialiseValues(totalNumberOfBox)
 </script>
 </html>
