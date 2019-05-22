@@ -35,6 +35,9 @@ body
     justify-content: center;
     align-items: center;
 }
+.visible-box-list-item {
+    padding: 2px;
+}
 </style>
 <body>
     <div id="container"></div>
@@ -43,7 +46,7 @@ body
     </div>
 </body>
 <script>
-    const totalNumberOfBox = 100
+    const totalNumberOfBox = 10
     const boxHeight = 120
     let containerHeight = document.getElementById('container').clientHeight
     const options = {
@@ -54,31 +57,50 @@ body
     let start=0, end=0
     let previousY=containerHeight/2
     let initial=true
+    let observedNode=null
+    let observedNodeId=null
+
+    const removeObserver=()=>{
+        if(observedNodeId){
+            observer.unobserve(document.querySelector('[id="'+observedNodeId+'"]'))
+            observedNodeId=null
+        }
+        initial = true
+    }
+
     const callback = (entries) => {
+        console.log("entries",entries)
+        console.log("initial",initial)
+
         entries.forEach(function(entry) {
             if(!initial){
                 if(previousY>entry.boundingClientRect.y){
-                console.log("scrolling up")
-                // if(start!=1){
-                //     start-=1
-                //     renderBox()
-                // }
+                    console.log("scrolling down")
+                    if(end<=totalNumberOfBox-2){
+                        start+=1
+                        end+=1
+                        removeObserver()
+                        renderBox()
+
+                    }
                 } else {
-                console.log("scrolling down")
-                // if(start!=totalNumberOfBox-2){
-                //     start+=1
-                //     renderBox()
-                // }
+                    console.log("scrolling up")
+                    if(start>=1){
+                        start-=1
+                        end-=1
+                        removeObserver()
+                        renderBox()
+                    }
                 }
+            } else {
+                initial = false
             }
-            initial=false
             previousY=entry.boundingClientRect.y
         });
     }
     var observer = new IntersectionObserver(callback, options);
     let addObserver = (id) => {
-        initial=true
-        console.log(id)
+        console.log("observing",id)
         let observedNode=document.querySelector('[id="'+id+'"]');
         observer.observe(observedNode)
     };
@@ -88,20 +110,22 @@ body
         let visibleList = ""
         dataToRender+="<div style='height:"+ start*boxHeight +"px'></div>"
         for(i=start;i<=end;i++) {
-            visibleList += '<p class="visible-boxes">'+i.toString()+'</p>'
+            visibleList += '<p class="visible-box-list-item">'+i.toString()+'</p>'
             dataToRender += '<div class="box" id='+i+'><div class="inside-box"><p class="number-text">'+i+'</p></div></div>'
         }
-        dataToRender+="<div style='height:"+ (totalNumberOfBox-end)*boxHeight +"px'></div>"
-        document.getElementById("container").innerHTML +=dataToRender
-        document.getElementById("result").innerHTML += visibleList
+        dataToRender+="<div style='height:"+ (totalNumberOfBox-end-1)*boxHeight +"px'></div>"
+        document.getElementById("container").innerHTML =dataToRender
+        document.getElementById("result").innerHTML = visibleList
         addObserver(Math.round((end+start)/2))
     };
 
-    let initialiseValues= (totalNumberOfBox) => {
+    let initialiseValues= () => {
         start=0
         end = Math.ceil(containerHeight/boxHeight)
+        end+=1
         renderBox()
     }
-    initialiseValues(totalNumberOfBox)
+
+    initialiseValues()
 </script>
 </html>
